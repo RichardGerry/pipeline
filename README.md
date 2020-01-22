@@ -3,9 +3,9 @@
 Pipeline allows you to run a sequence of functions in order
 where the output of one function becomes the input the next
 
-Written in python - it is easy to use, helps logically break work into
+Written in python - it is easy to use, multi-threaded capable, helps logically break work into
 concise functions, removes messy looping and callbacks that would otherwise 
-be needed to chain together function inputs and outputs, multi-threaded capability
+be needed to chain together function inputs and outputs
 
 
 ## Usage
@@ -29,12 +29,11 @@ To begin - import Pipeline class
 >>> from pipeline import Pipeline
 ```
 
-Pipeline is initialized with an iterable and optionally a number of threads.
-Each element in the iterable serves as input to the first applied function.
-Threads are used a pool and shared across all 'applied' functions.
+Pipeline is initialize with:
+* an iterable - each element is input to the first applied function
+* optionally a number of threads - size of the thread pool which is shared across all 'applied' functions
 
-Starting the example described above a pipeline is initialized with some tickers
-This pipeline will be run with 10 threads to perform all the work
+Starting the stock ticker example described above a pipeline is initialized with some tickers. This pipeline will be run with 10 threads to perform all the work
 
 ```pycon
 >>> tickers = ["XOM", "BP", "CVX", "KMI"]
@@ -61,9 +60,9 @@ Here are a few examples of functions that might perform the steps for this examp
 ```
 
 Those functions are then 'applied' to the pipeline
-Note - star_apply unpacks input to its parameters either positionally or kwargs
-based on the input type of Sequence or Mapping. parse_response returns a dict (Mapping) so the 
-Mapping is unpacked to the kwargs of ticker_update
+
+Note:
+*star_apply unpacks input to its parameters either positionally or kwargs based on the input type of Sequence or Mapping. parse_response returns a dict (Mapping) so the dict is unpacked to the kwargs of ticker_update
 
 ```pycon
 >>> pipe.apply(ticker_http_request)
@@ -71,28 +70,23 @@ Mapping is unpacked to the kwargs of ticker_update
 		.star_apply(ticker_update)
 ```
 
-The pipeline is then started by calling its 'run' method. Each item in the iterable provided
-at init will be sent through the pipeline individually with the output from one step
-serving as the input to the next step.
+The pipeline is then started by calling its 'run' method. 
 
-'run' returns a tuple - first position is the output (ie a list containing the return values
-from the last applied function), second position is errors (any exceptions raised at any point
-in the pipeline)
+Each item in the iterable provided at init will be sent through the pipeline individually with the output from one step serving as the input to the next step.
 
 ```pycon
 >>> output, errors = pipe.run()
 ```
 
+'run' returns a tuple - first position is the output (a list containing the return values
+from the last applied function), second position is the errors (a list of any exceptions raised at any point
+in the pipeline)
+
+
 A few other notes:
-	- if a function returns 'None' then the item stops moving forward in the pipeline.
-		This can be used as a way to filter results
-	- iter_apply is another method (not used above) and can be used to flatten results.
-		If a function returns an iterable but each item in the iterable needs to be
-		further processed individually you would call iter_apply. Each item in the input iterable
-		would have the 'func' (iter_apply param) applied to it along with any subsequently applied functions
-	- 'run' method returns exception objects (tuple second position) which can be used with the traceback module if you
-		need a full stack trace
-	- 'run' method blocks until all items have been processed
-	- star_apply was used in the example above to unpack a Mapping into keyword args. It can also be used
-		to unpack a Sequence into positional args
+* if a function returns 'None' then the item stops moving forward in the pipeline. This can be used as a way to filter results
+* iter_apply is another method (not used above) and can be used to flatten results. If a function returns an iterable but each item in the iterable needs to be further processed individually you would call iter_apply. Each item in the input iterable would have the 'func' (iter_apply param) applied to it along with any subsequently applied functions
+* 'run' method returns exception objects (tuple second position) which can be used with the traceback module if you need a full stack trace
+* 'run' method blocks until all items have been processed
+* star_apply was used in the example above to unpack a Mapping into keyword args. It can also be used to unpack a Sequence into positional args
 
