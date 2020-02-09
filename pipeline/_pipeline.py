@@ -71,17 +71,13 @@ class Pipeline(object):
     def _save_func_arg(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            self = args[0]
-            try:
-                func_arg = args[1]
-            except IndexError:
-                try:
-                    func_arg = kwargs["func"]
-                except KeyError as ke:
-                    raise TypeError("`func` param not provided") from ke
-            if not callable(func_arg):
-                raise ValueError("provided `func` is not a function")
-            self._funcs.append(func(*args, **kwargs))
+            self, *args = args
+            if len(args)>1:
+                raise TypeError("received {} arguments, expected 1".format(len(args)))
+            applied_func = func(self, *args, **kwargs)
+            if not callable(applied_func.func):
+                raise ValueError("provided `func` is not callable")
+            self._funcs.append(applied_func)
             return self
         return wrapper
 
