@@ -75,8 +75,6 @@ class Pipeline(object):
             if len(args)>1:
                 raise TypeError("received {} arguments, expected 1".format(len(args)))
             applied_func = func(self, *args, **kwargs)
-            if not callable(applied_func.func):
-                raise ValueError("provided `func` is not callable")
             self._funcs.append(applied_func)
             return self
         return wrapper
@@ -181,6 +179,8 @@ class Pipeline(object):
 
 class ApplyCallable(object):
     def __init__(self, func):
+        if not callable(func):
+            raise ValueError("provided `func` is not callable")
         self.func = func
 
     def __call__(self, value):
